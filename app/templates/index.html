@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Phishing Email Detector</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            color: #222;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1100px;
+            margin: 40px auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 34px;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: #666;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 250px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            resize: vertical;
+            font-size: 15px;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 7px;
+            background: #222;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.85;
+        }
+
+        .result-header {
+            text-align: center;
+            padding: 20px;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+
+        .risk {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .high {
+            color: #d90429;
+        }
+
+        .medium {
+            color: #e67700;
+        }
+
+        .low {
+            color: #16803c;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat {
+            background: #f7f7f7;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat h3 {
+            font-size: 28px;
+            margin-top: 8px;
+        }
+
+        .section-title {
+            font-size: 21px;
+            margin-bottom: 15px;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .warning {
+            background: #fff3f3;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 7px;
+        }
+
+        .success {
+            color: #16803c;
+        }
+
+        .empty {
+            color: #777;
+        }
+
+        .header-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .header-item {
+            background: #f7f7f7;
+            padding: 15px;
+            border-radius: 8px;
+            word-break: break-word;
+        }
+
+        .header-item strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        /* ==========================================
+        PROFESSIONAL UPLOAD CARD
+        ========================================== */
+
+        .upload-section {
+            margin: 20px 0;
+        }
+
+        .upload-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        .upload-icon {
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: #f1f5f9;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .upload-header h3 {
+            margin: 0;
+            font-size: 17px;
+        }
+
+        .upload-header p {
+            margin-top: 4px;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .upload-box {
+            position: relative;
+            min-height: 155px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+
+            padding: 25px;
+
+            border: 2px dashed #cbd5e1;
+            border-radius: 14px;
+
+            background: #f8fafc;
+
+            cursor: pointer;
+
+            transition: all 0.2s ease;
+        }
+
+        .upload-box:hover {
+            border-color: #475569;
+            background: #f1f5f9;
+            transform: translateY(-1px);
+        }
+
+        .upload-box-icon {
+            width: 48px;
+            height: 48px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 50%;
+
+            background: white;
+            border: 1px solid #e2e8f0;
+
+            font-size: 23px;
+            font-weight: bold;
+
+            box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+        }
+
+        .upload-text {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .upload-text strong {
+            font-size: 14px;
+        }
+
+        .upload-text span {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .upload-box small {
+            color: #94a3b8;
+            font-size: 11px;
+        }
+
+        .upload-box input[type="file"] {
+            position: absolute;
+            inset: 0;
+
+            width: 100%;
+            height: 100%;
+
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .selected-file {
+            display: none;
+
+            margin-top: 10px;
+            padding: 10px 14px;
+
+            border-radius: 8px;
+
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+
+            font-size: 13px;
+            color: #334155;
+
+            word-break: break-all;
+        }
+
+        .selected-file.active {
+            display: block;
+        }
+
+
+        /* ==========================================
+        URL INTELLIGENCE
+        ========================================== */
+
+        .url-item {
+            width: 100%;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+
+            border-radius: 8px;
+
+            background: #fff3f3;
+            border: 1px solid #ffd6d6;
+
+            overflow: hidden;
+        }
+
+        .url-item strong {
+            display: block;
+
+            font-size: 13px;
+
+            word-break: break-all;
+            overflow-wrap: anywhere;
+
+            line-height: 1.5;
+        }
+
+        /* ==========================================
+        EXPLAINABLE AI
+        ========================================== */
+
+        .explanation-section {
+            margin: 24px 0;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        .section-icon {
+            width: 42px;
+            height: 42px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 10px;
+            background: #f1f5f9;
+
+            font-size: 20px;
+        }
+
+        .section-header h3 {
+            margin: 0;
+            font-size: 17px;
+        }
+
+        .section-header p {
+            margin: 4px 0 0;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .explanation-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .explanation-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+
+            padding: 14px 16px;
+
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+        }
+
+        .explanation-indicator {
+            font-size: 16px;
+            line-height: 1.4;
+        }
+
+        .explanation-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .explanation-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+
+        .explanation-top strong {
+            font-size: 14px;
+        }
+
+        .explanation-content p {
+            margin: 0;
+            color: #475569;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .severity-badge {
+            padding: 3px 8px;
+
+            border-radius: 20px;
+
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+        }
+
+        .explanation-card.high {
+            border-left: 4px solid #ef4444;
+        }
+
+        .explanation-card.high .severity-badge {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .explanation-card.medium {
+            border-left: 4px solid #f59e0b;
+        }
+
+        .explanation-card.medium .severity-badge {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .explanation-card.low {
+            border-left: 4px solid #22c55e;
+        }
+
+        .explanation-card.low .severity-badge {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .no-explanations {
+            padding: 16px;
+
+            border-radius: 10px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        @media (max-width: 700px) {
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .header-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                width: 95%;
+            }
+
+        }
+
+    </style>
+
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <header>
+
+        <h1>🛡️ AI Phishing Email Detector</h1>
+
+        <p>
+            AI-powered email security analysis using Machine Learning,
+            URL Intelligence and Email Header Analysis
+        </p>
+
+    </header>
+
+
+    <!-- ==========================================
+         EMAIL INPUT
+         ========================================== -->
+
+    <div class="card">
+
+        <h2 class="section-title">
+            Analyze Email
+        </h2>
+
+        <form method="POST" enctype="multipart/form-data">
+
+            <div class="upload-section">
+
+                <div class="upload-header">
+                    <div class="upload-icon">
+                        ↑
+                    </div>
+
+                    <div>
+                        <h3>Upload Email</h3>
+                        <p>Analyze an email file for phishing threats</p>
+                    </div>
+                </div>
+
+                <label for="email_file" class="upload-box">
+
+                    <div class="upload-box-icon">
+                        ↑
+                    </div>
+
+                    <div class="upload-text">
+                        <strong>Click to upload</strong>
+                        <span>or drag and drop your email here</span>
+                    </div>
+
+                    <small>
+                        Supported formats: .TXT, .EML
+                    </small>
+
+                    <input
+                        type="file"
+                        id="email_file"
+                        name="email_file"
+                        accept=".txt,.eml"
+                    >
+
+                </label>
+
+                <div id="selected-file" class="selected-file">
+                    No file selected
+                </div>
+
+            </div>
+
+            <textarea
+                name="email"
+                placeholder="Paste email content here..."
+            ></textarea>
+
+            <button type="submit">
+                🔍 Analyze Email
+            </button>
+
+        </form>
+
+    </div>
+
+
+    {% if result %}
+
+    <!-- ==========================================
+         RISK RESULT
+         ========================================== -->
+
+    <div class="card">
+
+        <div class="result-header">
+
+            <h2>Detection Result</h2>
+
+            <div class="risk
+                {% if result.risk_level == 'HIGH' %}
+                    high
+                {% elif result.risk_level == 'MEDIUM' %}
+                    medium
+                {% else %}
+                    low
+                {% endif %}
+            ">
+
+                {{ result.risk_level }} RISK
+
+            </div>
+
+            <p>
+                Overall Risk Score:
+                <strong>{{ result.risk_score }}/100</strong>
+            </p>
+
+        </div>
+
+
+        <!-- ======================================
+             STATISTICS
+             ====================================== -->
+
+        <div class="stats">
+
+            <div class="stat">
+
+                <p>Risk Score</p>
+
+                <h3>
+                    {{ result.risk_score }}
+                </h3>
+
+            </div>
+
+
+            <div class="stat">
+
+                <p>AI Spam Probability</p>
+
+                <h3>
+                    {{ result.ml_probability }}%
+                </h3>
+
+            </div>
+
+
+            <div class="stat">
+
+                <p>URLs Detected</p>
+
+                <h3>
+                    {{ result.urls|length }}
+                </h3>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================
+         WHY FLAGGED
+         ========================================== -->
+
+    <div class="card">
+
+        <h2 class="section-title">
+            🚨 Why Was This Email Flagged?
+        </h2>
+
+        <!-- ==========================================
+            THREAT EXPLANATION
+        ========================================== -->
+
+        <div class="explanation-section">
+
+            <div class="section-header">
+                <div class="section-icon">🔍</div>
+                <div>
+                    <h3>Why is this email suspicious?</h3>
+                    <p>AI-generated explanation of the detected threats</p>
+                </div>
+            </div>
+
+            <div class="explanation-list">
+
+                {% if result.explanations %}
+
+                    {% for explanation in result.explanations %}
+
+                        <div class="explanation-card {{ explanation.severity|lower }}">
+
+                            <div class="explanation-indicator">
+                                {% if explanation.severity == "HIGH" %}
+                                    🔴
+                                {% elif explanation.severity == "MEDIUM" %}
+                                    🟠
+                                {% else %}
+                                    🟢
+                                {% endif %}
+                            </div>
+
+                            <div class="explanation-content">
+
+                                <div class="explanation-top">
+
+                                    <strong>
+                                        {{ explanation.category }}
+                                    </strong>
+
+                                    <span class="severity-badge">
+                                        {{ explanation.severity }}
+                                    </span>
+
+                                </div>
+
+                                <p>
+                                    {{ explanation.message }}
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <div class="no-explanations">
+                        No significant threats were detected.
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================
+         URL INTELLIGENCE
+         ========================================== -->
+
+    <div class="card">
+
+        <h2 class="section-title">
+            🔗 URL Intelligence
+        </h2>
+
+        {% if result.urls %}
+
+            {% for url in result.urls %}
+
+            <div class="url-item">
+
+                <strong>{{ url }}</strong>
+
+            </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <p class="empty">
+                No URLs detected.
+            </p>
+
+        {% endif %}
+
+
+        {% if result.url_reasons %}
+
+        <br>
+
+        <h3>URL Warnings</h3>
+        <ul>
+            {% for warning in result.url_reasons %}
+            <li>
+                {{ warning }}
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+    </div>
+
+
+    <!-- ==========================================
+         SENDER ANALYSIS
+         ========================================== -->
+
+    <div class="card">
+
+        <h2 class="section-title">
+            📧 Sender Analysis
+        </h2>
+
+        {% if result.sender_analysis %}
+
+            <div class="header-grid">
+
+                <div class="header-item">
+
+                    <strong>Detected Senders</strong>
+
+                    {% if result.sender_analysis.senders %}
+
+                        {% for sender in result.sender_analysis.senders %}
+
+                            {{ sender }}<br>
+
+                        {% endfor %}
+
+                    {% else %}
+
+                        None detected
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="header-item">
+
+                    <strong>Sender Warnings</strong>
+
+                    {% if result.sender_analysis.sender_reasons %}
+
+                        {% for warning in result.sender_analysis.sender_reasons %}
+
+                            ⚠️ {{ warning }}<br>
+
+                        {% endfor %}
+
+                    {% else %}
+
+                        <span class="success">
+                            No sender warnings
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- ==========================================
+         EMAIL HEADER ANALYSIS
+         ========================================== -->
+
+    <div class="card">
+
+        <h2 class="section-title">
+            📨 Email Header Analysis
+        </h2>
+
+        {% if result.header_analysis %}
+
+        <div class="header-grid">
+
+            <div class="header-item">
+
+                <strong>From</strong>
+
+                {{ result.header_analysis.from or "Not detected" }}
+
+            </div>
+
+
+            <div class="header-item">
+
+                <strong>Reply-To</strong>
+
+                {{ result.header_analysis.reply_to or "Not detected" }}
+
+            </div>
+
+
+            <div class="header-item">
+
+                <strong>Return-Path</strong>
+
+                {{ result.header_analysis.return_path or "Not detected" }}
+
+            </div>
+
+
+            <div class="header-item">
+
+                <strong>Authentication Results</strong>
+
+                {{ result.header_analysis.authentication_results or "Not detected" }}
+
+            </div>
+
+        </div>
+
+
+        <br>
+
+
+        <h3>Header Warnings</h3>
+
+        <br>
+
+        {% if result.header_analysis.warnings %}
+
+        <ul>
+
+            {% for warning in result.header_analysis.warnings %}
+
+            <li class="warning">
+                ⚠️ {{ warning }}
+            </li>
+
+            {% endfor %}
+
+        </ul>
+
+        {% else %}
+
+        <p class="success">
+            No suspicious header indicators detected.
+        </p>
+
+        {% endif %}
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- ==========================================
+         KEYWORD ANALYSIS
+         ========================================== -->
+
+    <div class="card">
+
+        <h2 class="section-title">
+            🔎 Content Analysis
+        </h2>
+
+
+        <h3>Urgency Keywords</h3>
+
+        {% if result.urgency_words %}
+
+        <p>
+            {{ result.urgency_words|join(", ") }}
+        </p>
+
+        {% else %}
+
+        <p class="empty">
+            None detected
+        </p>
+
+        {% endif %}
+
+
+        <br>
+
+
+        <h3>Credential Keywords</h3>
+
+        {% if result.credential_words %}
+
+        <p>
+            {{ result.credential_words|join(", ") }}
+        </p>
+
+        {% else %}
+
+        <p class="empty">
+            None detected
+        </p>
+
+        {% endif %}
+
+
+        <br>
+
+
+        <h3>Financial Keywords</h3>
+
+        {% if result.financial_words %}
+
+        <p>
+            {{ result.financial_words|join(", ") }}
+        </p>
+
+        {% else %}
+
+        <p class="empty">
+            None detected
+        </p>
+
+        {% endif %}
+
+    </div>
+
+
+    {% endif %}
+
+</div>
+
+    <script>
+
+    const fileInput = document.getElementById("email_file");
+    const selectedFile = document.getElementById("selected-file");
+
+    fileInput.addEventListener("change", function () {
+
+        if (this.files.length > 0) {
+
+            selectedFile.textContent =
+                "Selected: " + this.files[0].name;
+
+            selectedFile.classList.add("active");
+
+        } else {
+
+            selectedFile.textContent =
+                "No file selected";
+
+            selectedFile.classList.remove("active");
+        }
+
+    });
+
+    </script>
+
+</body>
+
+</html>
